@@ -7,17 +7,17 @@ import (
 )
 
 type BookUsecase struct {
-	bookRepository domain.BookRepository
+	BookRepository domain.BookRepository
 }
 
 func NewBookUsecase(bookRepository domain.BookRepository) domain.BookUsecase {
 	return &BookUsecase{
-		bookRepository: bookRepository,
+		BookRepository: bookRepository,
 	}
 }
 
 func (a *BookUsecase) Index(ctx context.Context, subject string) ([]domain.Book, error) {
-	books, err := a.bookRepository.FilterBySubject(ctx, subject)
+	books, err := a.BookRepository.FilterBySubject(ctx, subject)
 	if err != nil {
 		return books, err
 	}
