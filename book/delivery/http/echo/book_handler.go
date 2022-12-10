@@ -16,7 +16,7 @@ func NewBookHandler(e *echo.Echo, bookUsecase domain.BookUsecase) {
 		BookUsecase: bookUsecase,
 	}
 	bookGroup := e.Group("/books")
-	bookGroup.GET("", handler.TestResponse)
+	bookGroup.GET("", handler.Index)
 	bookGroup.GET("/test_response", handler.TestResponse)
 }
 
@@ -30,7 +30,7 @@ func (s *BookHandler) TestResponse(c echo.Context) error {
 }
 
 func (s *BookHandler) Index(c echo.Context) error {
-	subject := c.Param("subject")
+	subject := c.QueryParam("subject")
 	books, err := s.BookUsecase.Index(c.Request().Context(), subject)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
