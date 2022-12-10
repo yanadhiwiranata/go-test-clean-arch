@@ -40,4 +40,20 @@ the data from API will be breakdown like
             int id
             string name
         }
+
+        book }o--o{ booking : booking_book
+        booking {
+            int id
+            string book_id
+            int user_id
+            int quantity
+            timestamp book_at
+            timestamp return_at
+        }
+
+        user }o--o{ booking : user_booking
+        user {
+            int id
+            string name
+        }
 ```
