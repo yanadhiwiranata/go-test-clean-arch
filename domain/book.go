@@ -20,3 +20,7 @@ type BookRepository interface {
 	FilterBySubject(ctx context.Context, subject string) ([]Book, error)
 	FilterByID(ctx context.Context, id string) (Book, error)
 }
+
+type BookUsecase interface {
+	Index(ctx context.Context, subject string) ([]Book, error)
+}

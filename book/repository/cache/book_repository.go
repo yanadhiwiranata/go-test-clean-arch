@@ -92,10 +92,6 @@ func (o *CacheBookRepository) Index(ctx context.Context) ([]domain.Book, error) 
 		o.c.Set(o.cacheName, books, cache.DefaultExpiration)
 	}
 
-	if len(books) < 1 {
-		return []domain.Book{}, domain.ErrNotFound
-	}
-
 	return books, nil
 }
 
@@ -111,10 +107,6 @@ func (o *CacheBookRepository) FilterBySubject(ctx context.Context, subject strin
 		}
 	}
 
-	if len(filterredBook) < 1 {
-		return []domain.Book{}, domain.ErrNotFound
-	}
-
 	return filterredBook, nil
 }
 
@@ -126,5 +118,5 @@ func (o *CacheBookRepository) FilterByID(ctx context.Context, id string) (domain
 		}
 	}
 
-	return domain.Book{}, domain.ErrNotFound
+	return domain.Book{}, nil
 }

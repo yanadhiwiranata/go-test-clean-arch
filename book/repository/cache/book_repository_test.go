@@ -27,7 +27,7 @@ func TestFilterBySubject(t *testing.T) {
 
 	books, err = bRepo.FilterBySubject(context.Background(), "Bibliography Empty")
 	assert.Empty(t, books)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
 
 func TestFilterByID(t *testing.T) {
@@ -38,5 +38,5 @@ func TestFilterByID(t *testing.T) {
 
 	books, err = bRepo.FilterByID(context.Background(), "ad123")
 	assert.Empty(t, books)
-	assert.Error(t, err)
+	assert.NoError(t, err)
 }
