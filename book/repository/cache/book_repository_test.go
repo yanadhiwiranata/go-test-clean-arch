@@ -21,18 +21,22 @@ func TestIndex(t *testing.T) {
 
 func TestFilterBySubject(t *testing.T) {
 	bRepo := _repo.NewCacheBookRepository()
-	books, _ := bRepo.FilterBySubject(context.Background(), "Bibliography")
+	books, err := bRepo.FilterBySubject(context.Background(), "Bibliography")
 	assert.NotEmpty(t, books)
+	assert.NoError(t, err)
 
-	books, _ = bRepo.FilterBySubject(context.Background(), "Bibliography Empty")
+	books, err = bRepo.FilterBySubject(context.Background(), "Bibliography Empty")
 	assert.Empty(t, books)
+	assert.Error(t, err)
 }
 
 func TestFilterByID(t *testing.T) {
 	bRepo := _repo.NewCacheBookRepository()
-	books, _ := bRepo.FilterByID(context.Background(), "/works/OL362427W")
+	books, err := bRepo.FilterByID(context.Background(), "/works/OL362427W")
 	assert.NotEmpty(t, books)
+	assert.NoError(t, err)
 
-	books, _ = bRepo.FilterByID(context.Background(), "ad123")
+	books, err = bRepo.FilterByID(context.Background(), "ad123")
 	assert.Empty(t, books)
+	assert.Error(t, err)
 }
