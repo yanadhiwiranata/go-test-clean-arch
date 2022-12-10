@@ -98,3 +98,33 @@ func (o *CacheBookRepository) Index(ctx context.Context) ([]domain.Book, error) 
 
 	return books, nil
 }
+
+func (o *CacheBookRepository) FilterBySubject(ctx context.Context, subject string) ([]domain.Book, error) {
+	books, _ := o.Index(ctx)
+	var filterredBook []domain.Book
+	for _, book := range books {
+		for _, s := range book.Subjects {
+			if s == subject {
+				filterredBook = append(filterredBook, book)
+				break
+			}
+		}
+	}
+
+	if len(filterredBook) < 1 {
+		return []domain.Book{}, domain.ErrNotFound
+	}
+
+	return filterredBook, nil
+}
+
+func (o *CacheBookRepository) FilterByID(ctx context.Context, id string) (domain.Book, error) {
+	books, _ := o.Index(ctx)
+	for _, book := range books {
+		if book.ID == id {
+			return book, nil
+		}
+	}
+
+	return domain.Book{}, domain.ErrNotFound
+}

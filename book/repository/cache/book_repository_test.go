@@ -18,3 +18,21 @@ func TestIndex(t *testing.T) {
 	assert.NotEmpty(t, books[0].Subjects)
 	assert.NotEmpty(t, books[0].ID)
 }
+
+func TestFilterBySubject(t *testing.T) {
+	bRepo := _repo.NewCacheBookRepository()
+	books, _ := bRepo.FilterBySubject(context.Background(), "Bibliography")
+	assert.NotEmpty(t, books)
+
+	books, _ = bRepo.FilterBySubject(context.Background(), "Bibliography Empty")
+	assert.Empty(t, books)
+}
+
+func TestFilterByID(t *testing.T) {
+	bRepo := _repo.NewCacheBookRepository()
+	books, _ := bRepo.FilterByID(context.Background(), "/works/OL362427W")
+	assert.NotEmpty(t, books)
+
+	books, _ = bRepo.FilterByID(context.Background(), "ad123")
+	assert.Empty(t, books)
+}

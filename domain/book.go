@@ -17,4 +17,6 @@ type Author struct {
 
 type BookRepository interface {
 	Index(ctx context.Context) ([]Book, error)
+	FilterBySubject(ctx context.Context, subject string) ([]Book, error)
+	FilterByID(ctx context.Context, id string) (Book, error)
 }
