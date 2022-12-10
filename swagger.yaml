@@ -10,8 +10,52 @@ paths:
     get:
       responses:
           200:
-            description: hellow world
+            description: hello world
             schema:
               type: string
               default: hello world
+  /books:
+    get:
+      responses:
+        200:
+            description: list matching books
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  title:
+                    type: string
+                    minLength: 1
+                  subjects:
+                    type: array
+                    items:
+                      type: string
+                  authors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                        name:
+                          type: string
+        500:
+            description: generic error response
+            schema:
+              $ref: "#/definitions/error"
+definitions:
+  error:
+    type: object
+    required:
+      - message
+    properties:
+      code:
+        type: integer
+      message:
+        type: string
+
+    
 
