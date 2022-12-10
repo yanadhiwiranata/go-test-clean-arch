@@ -74,3 +74,22 @@ Booking process
         DD -->Stop
 
 ```
+
+API contract
+
+testing api documentation with go swagger
+
+https://github.com/go-swagger/go-swagger
+
+install using brew
+
+```
+brew tap go-swagger/go-swagger
+brew install go-swagger
+```
+
+serve swagger
+```
+swagger serve ./swagger.yaml
+```
+

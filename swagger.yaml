@@ -1,0 +1,17 @@
+swagger: "2.0"
+info:
+  title: Simple Booking Service
+  description: From the todo list tutorial on goswagger.io
+  version: 0.0.1
+schemes:
+  - http
+paths: 
+  /:
+    get:
+      responses:
+          200:
+            description: hellow world
+            schema:
+              type: string
+              default: hello world
+
