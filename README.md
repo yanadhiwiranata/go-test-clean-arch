@@ -50,6 +50,16 @@ install
 https://github.com/stretchr/testify
 ```
 
+### Repository
+#### go-chache
+for simplicity running project will using in memory cache for testing
+
+installation
+```
+go get github.com/patrickmn/go-cache
+```
+
+
 
 
 # Sample Case
