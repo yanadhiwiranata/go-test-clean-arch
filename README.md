@@ -57,3 +57,20 @@ the data from API will be breakdown like
             string name
         }
 ```
+
+Booking process
+```mermaid
+    flowchart LR
+        Start-->B{book exist?}
+        subgraph ide1 [is available]
+        B-- Yes-->C{quantity valid?}
+        C-- Yes-->D{stock available}
+        end
+        D -- Yes --> CC[Booking Created ]
+        B -- No --> DD[Return Error]
+        C -- No --> DD
+        D -- No --> DD
+        CC -->Stop
+        DD -->Stop
+
+```
