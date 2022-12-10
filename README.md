@@ -57,6 +57,7 @@ the data from API will be breakdown like
             string name
         }
 ```
+for simplicity I will remove user for a while
 
 Booking process
 ```mermaid

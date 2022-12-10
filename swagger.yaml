@@ -16,6 +16,10 @@ paths:
               default: hello world
   /books:
     get:
+      parameters:
+            - name: subject
+              in: query
+              type: string
       responses:
         200:
             description: list matching books
@@ -43,9 +47,56 @@ paths:
                         name:
                           type: string
         500:
-            description: generic error response
+            description: internal server error
             schema:
               $ref: "#/definitions/error"
+  /bookings:
+    post:
+      parameters:
+        - in: "body"
+          name: "body"
+          required: true
+          schema:
+            type: object
+            properties:
+              book_id:
+                type: string
+              quantity:
+                type: integer
+              book_at:
+                type: integer
+                format: unix timestamp
+      responses:
+          200:
+            description: booking details
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                book_id:
+                  type: string
+                quantity:
+                  type: integer
+                book_at:
+                  type: integer
+                  format: unix timestamp
+                return_at:
+                  type: integer
+                  format: unix timestamp
+          400:
+            description: bad request
+            schema:
+              $ref: "#/definitions/error"
+          404:
+            description: book not found
+            schema:
+              $ref: "#/definitions/error"
+          500:
+            description: internal server error
+            schema:
+              $ref: "#/definitions/error"
+
 definitions:
   error:
     type: object
