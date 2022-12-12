@@ -50,6 +50,39 @@ install
 https://github.com/stretchr/testify
 ```
 
+#### Vektra Mockery
+source https://github.com/vektra/mockery
+this libraries is to help making mock domain easier
+
+install
+```
+docker pull vektra/mockery
+```
+
+generate mock
+```
+mockery --all --keeptree
+```
+
+#### gomonkey
+to help mock method
+
+install
+```
+go get github.com/agiledragon/gomonkey/v2@v2.2.0
+```
+
+the problem for monkey patch libraries is currently I can't find any compatible libraries for M1 arm64 architecture.
+I can use this by changing my goarch in environment variables to amd64, the cons is I can't debug it on VS code
+in VS code you can add this config in user settings json
+```
+"go.toolsEnvVars": {
+        "GOARCH":"amd64"
+},
+```
+
+
+
 ### Repository
 #### go-chache
 for simplicity running project will using in memory cache for testing
@@ -124,3 +157,5 @@ Booking process
 
 ```
 
+
+go test .\... -gcflags=all=-l
