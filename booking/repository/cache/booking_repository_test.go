@@ -74,23 +74,63 @@ func TestCountCurrentBooking(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tc.quantity, count)
 		})
-
 	}
 }
 
 func TestBooking(t *testing.T) {
 	type testCase struct {
-		name string
+		name     string
+		bookID   string
+		bookAt   time.Time
+		returnAt time.Time
+		quantity int
+		success  bool
 	}
 
-	tcs := []testCase{
-		{name: "booking success"},
+	mockBook := domain.Book{
+		ID:           "works/OL8193420W",
+		Title:        "title 1",
+		EditionCount: 20,
+		Authors:      []domain.Author{},
 	}
+
+	now := time.Now()
+	tomorrow := now.AddDate(0, 0, 1)
+	the_day_after_tomorrow := now.AddDate(0, 0, 2)
+
+	halfQuantity := mockBook.EditionCount / 2
+
+	mockBookings := []domain.Booking{
+		{
+			ID:       1,
+			BookID:   mockBook.ID,
+			Quantity: halfQuantity,
+			BookAt:   tomorrow,
+			ReturnAt: the_day_after_tomorrow,
+		},
+	}
+	tcs := []testCase{
+		{name: "booking 1 quantity book", bookID: mockBook.ID, bookAt: time.Now(), returnAt: time.Now(), quantity: 1, success: true},
+		{name: "booking 0 quantity book", bookID: mockBook.ID, bookAt: time.Now(), returnAt: time.Now(), quantity: 0, success: false},
+		{name: "booking -1 quantity book", bookID: mockBook.ID, bookAt: time.Now(), returnAt: time.Now(), quantity: -1, success: false},
+	}
+
+	bookingRepository := _cacheBookRepository.NewCacheBookingRepository()
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			assert.Equal(t, true, true)
-		})
+			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookRepository.CacheBookRepository) []domain.Booking {
+				return mockBookings
+			})
+			defer patches.Reset()
 
+			booking, err := bookingRepository.Booking(context.Background(), mockBook.ID, tc.bookAt, tc.returnAt, tc.quantity)
+			if tc.success {
+				assert.NoError(t, err)
+				assert.Equal(t, len(mockBookings)+1, booking.ID)
+			} else {
+				assert.Error(t, err)
+			}
+		})
 	}
 }

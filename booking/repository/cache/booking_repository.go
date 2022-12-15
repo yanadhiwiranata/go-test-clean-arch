@@ -38,7 +38,21 @@ func (s *CacheBookRepository) CountCurrentBooking(ctx context.Context, bookID st
 }
 
 func (s *CacheBookRepository) Booking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time, quantity int) (domain.Booking, error) {
-	return domain.Booking{}, nil
+	if quantity < 1 {
+		return domain.Booking{}, domain.ErrBadParamInput
+	}
+
+	// TODO lock or add sharing sequence to keep ID increment correctly when scale up(it will be ok if using database sequence)
+	bookings := s.AllBooking()
+	newBooking := domain.Booking{
+		ID:       len(bookings) + 1,
+		BookID:   bookID,
+		BookAt:   bookAt,
+		ReturnAt: returnAt,
+		Quantity: quantity,
+	}
+	bookings = append(bookings, newBooking)
+	return newBooking, nil
 }
 
 func (s *CacheBookRepository) AllBooking() []domain.Booking {
