@@ -8,7 +8,7 @@ import (
 
 	"github.com/agiledragon/gomonkey/v2"
 	"github.com/stretchr/testify/assert"
-	_cacheBookRepository "github.com/yanadhiwiranata/go-test-clean-arch/booking/repository/cache"
+	_cacheBookingRepository "github.com/yanadhiwiranata/go-test-clean-arch/booking/repository/cache"
 	"github.com/yanadhiwiranata/go-test-clean-arch/domain"
 )
 
@@ -61,7 +61,7 @@ func TestCountCurrentBooking(t *testing.T) {
 		},
 	}
 
-	bookingRepository := _cacheBookRepository.NewCacheBookingRepository()
+	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository()
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {

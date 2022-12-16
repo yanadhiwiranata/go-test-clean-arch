@@ -17,3 +17,7 @@ type BookingRepository interface {
 	CountCurrentBooking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time) (int, error)
 	Booking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time, quantity int) (Booking, error)
 }
+
+type BookingUsecase interface {
+	Booking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time, quantity int) (Booking, error)
+}
