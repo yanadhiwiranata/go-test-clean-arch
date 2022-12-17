@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/yanadhiwiranata/go-test-clean-arch/domain"
+	_domain_helper "github.com/yanadhiwiranata/go-test-clean-arch/domain/helper"
 	"github.com/yanadhiwiranata/go-test-clean-arch/util"
 )
 
@@ -20,11 +21,6 @@ func NewBookingHandler(e *echo.Echo, bookingUsecase domain.BookingUsecase) {
 	bookGroup := e.Group("/bookings")
 	bookGroup.GET("", handler.Index)
 	bookGroup.POST("", handler.Booking)
-}
-
-type ResponseError struct {
-	Message string `json:"message"`
-	Code    int    `json:"code"`
 }
 
 type BookingPostRequest struct {
@@ -48,12 +44,12 @@ func (s *BookingHandler) Index(c echo.Context) error {
 	endAt, err2 := util.GetTimestampFromUnixString(c.QueryParam("endAt"))
 
 	if err1 != nil || err2 != nil {
-		return c.JSON(http.StatusBadRequest, ResponseError{Message: domain.ErrBadParamInput.Error()})
+		return c.JSON(http.StatusBadRequest, _domain_helper.ResponseError{Message: domain.ErrBadParamInput.Error()})
 	}
 
 	bookings, err := s.BookingUsecase.Index(c.Request().Context(), startAt, endAt)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, _domain_helper.ResponseError{Message: err.Error()})
 	}
 
 	var response []BookingResponse
@@ -75,7 +71,7 @@ func (s *BookingHandler) Booking(c echo.Context) error {
 
 	bookings, err := s.BookingUsecase.Booking(c.Request().Context(), request.BookID, request.BookAt.Time, request.ReturnAt.Time, request.Quantity)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, ResponseError{Message: err.Error()})
+		return c.JSON(http.StatusBadRequest, _domain_helper.ResponseError{Message: err.Error()})
 	}
 
 	var response BookingResponse

@@ -4,12 +4,15 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	middleware "github.com/labstack/echo/v4/middleware"
+	"github.com/labstack/gommon/log"
 	_book_handler_echo "github.com/yanadhiwiranata/go-test-clean-arch/book/delivery/http/echo"
 	_book_cache_repository "github.com/yanadhiwiranata/go-test-clean-arch/book/repository/cache"
 	_book_usecase "github.com/yanadhiwiranata/go-test-clean-arch/book/usecase"
 	_booking_handler_echo "github.com/yanadhiwiranata/go-test-clean-arch/booking/delivery/http/echo"
 	_booking_cache_repository "github.com/yanadhiwiranata/go-test-clean-arch/booking/repository/cache"
 	_booking_usecase "github.com/yanadhiwiranata/go-test-clean-arch/booking/usecase"
+	_domain_helper "github.com/yanadhiwiranata/go-test-clean-arch/domain/helper"
 )
 
 func main() {
@@ -29,5 +32,24 @@ func defaultEchoServer() *echo.Echo {
 	bookingRepo := _booking_cache_repository.NewCacheBookingRepository()
 	bookingUsecase := _booking_usecase.NewBookingUsecase(bookingRepo, bRepo)
 	_booking_handler_echo.NewBookingHandler(r, bookingUsecase)
+
+	r.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
+		StackSize: 1 << 10, // 1 KB
+		LogLevel:  log.ERROR,
+	}))
+	r.HTTPErrorHandler = customHTTPErrorHandler
 	return r
+}
+
+func customHTTPErrorHandler(err error, c echo.Context) {
+	report, ok := err.(*echo.HTTPError)
+	if !ok {
+		report = echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	c.Logger().Error(report)
+
+	response := _domain_helper.ResponseError{
+		Message: "Internal Server Error",
+	}
+	c.JSON(http.StatusInternalServerError, response)
 }
