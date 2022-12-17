@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	_cacheBookingRepository "github.com/yanadhiwiranata/go-test-clean-arch/booking/repository/cache"
 	"github.com/yanadhiwiranata/go-test-clean-arch/domain"
+	"github.com/yanadhiwiranata/go-test-clean-arch/util"
 )
 
 func TestCountCurrentBooking(t *testing.T) {
@@ -20,10 +21,7 @@ func TestCountCurrentBooking(t *testing.T) {
 		quantity int
 	}
 
-	now := time.Now()
-	yesterday := now.AddDate(0, 0, -1)
-	tomorrow := now.AddDate(0, 0, 1)
-	the_day_after_tomorrow := now.AddDate(0, 0, 2)
+	yesterday, now, tomorrow, the_day_after_tomorrow := util.GenerateSampleTestTime()
 
 	fullQuantity := 20
 	halfQuantity := fullQuantity / 2
@@ -65,7 +63,7 @@ func TestCountCurrentBooking(t *testing.T) {
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookRepository.CacheBookRepository) []domain.Booking {
+			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookRepository) []domain.Booking {
 				return mockBookings
 			})
 			defer patches.Reset()
@@ -94,9 +92,7 @@ func TestBooking(t *testing.T) {
 		Authors:      []domain.Author{},
 	}
 
-	now := time.Now()
-	tomorrow := now.AddDate(0, 0, 1)
-	the_day_after_tomorrow := now.AddDate(0, 0, 2)
+	_, now, tomorrow, the_day_after_tomorrow := util.GenerateSampleTestTime()
 
 	halfQuantity := mockBook.EditionCount / 2
 
@@ -110,16 +106,16 @@ func TestBooking(t *testing.T) {
 		},
 	}
 	tcs := []testCase{
-		{name: "booking 1 quantity book", bookID: mockBook.ID, bookAt: time.Now(), returnAt: time.Now(), quantity: 1, success: true},
-		{name: "booking 0 quantity book", bookID: mockBook.ID, bookAt: time.Now(), returnAt: time.Now(), quantity: 0, success: false},
-		{name: "booking -1 quantity book", bookID: mockBook.ID, bookAt: time.Now(), returnAt: time.Now(), quantity: -1, success: false},
+		{name: "booking 1 quantity book", bookAt: now, returnAt: now, quantity: 1, success: true},
+		{name: "booking 0 quantity book", bookID: mockBook.ID, bookAt: now, returnAt: now, quantity: 0, success: false},
+		{name: "booking -1 quantity book", bookID: mockBook.ID, bookAt: now, returnAt: now, quantity: -1, success: false},
 	}
 
-	bookingRepository := _cacheBookRepository.NewCacheBookingRepository()
+	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository()
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookRepository.CacheBookRepository) []domain.Booking {
+			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookRepository) []domain.Booking {
 				return mockBookings
 			})
 			defer patches.Reset()
@@ -131,6 +127,111 @@ func TestBooking(t *testing.T) {
 			} else {
 				assert.Error(t, err)
 			}
+		})
+	}
+}
+
+func TestFilterBookingByTime(t *testing.T) {
+	_, now, tomorrow, the_day_after_tomorrow := util.GenerateSampleTestTime()
+
+	mockBook := domain.Book{
+		ID:           "works/OL8193420W",
+		Title:        "title 1",
+		EditionCount: 20,
+		Authors:      []domain.Author{},
+	}
+
+	allDayBooking := []domain.Booking{
+		{
+			ID:       10,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   now,
+			ReturnAt: the_day_after_tomorrow,
+		},
+	}
+
+	todayBooking := []domain.Booking{
+		{
+			ID:       1,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   now,
+			ReturnAt: now,
+		},
+	}
+
+	tomorrowBooking := []domain.Booking{
+		{
+			ID:       2,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   tomorrow,
+			ReturnAt: tomorrow,
+		},
+		{
+			ID:       3,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   tomorrow,
+			ReturnAt: tomorrow,
+		},
+	}
+
+	theDayAfterTomorrowBooking := []domain.Booking{
+		{
+			ID:       4,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   the_day_after_tomorrow,
+			ReturnAt: the_day_after_tomorrow,
+		},
+		{
+			ID:       5,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   the_day_after_tomorrow,
+			ReturnAt: the_day_after_tomorrow,
+		},
+		{
+			ID:       6,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   the_day_after_tomorrow,
+			ReturnAt: the_day_after_tomorrow,
+		},
+	}
+
+	mockBookings := []domain.Booking{}
+	mockBookings = append(mockBookings, allDayBooking...)
+	mockBookings = append(mockBookings, todayBooking...)
+	mockBookings = append(mockBookings, tomorrowBooking...)
+	mockBookings = append(mockBookings, theDayAfterTomorrowBooking...)
+
+	type testCase struct {
+		name            string
+		bookAt          time.Time
+		returnAt        time.Time
+		bookingQuantity int
+	}
+
+	tcs := []testCase{
+		{name: "show today book", bookAt: now, returnAt: now, bookingQuantity: 2},
+		{name: "show tomorrow book", bookAt: tomorrow, returnAt: tomorrow, bookingQuantity: 3},
+		{name: "show the day after tomorrow book", bookAt: the_day_after_tomorrow, returnAt: the_day_after_tomorrow, bookingQuantity: 4},
+	}
+
+	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository()
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookRepository) []domain.Booking {
+				return mockBookings
+			})
+			defer patches.Reset()
+
+			bookings := bookingRepository.FilterBooking(context.Background(), tc.bookAt, tc.returnAt)
+			assert.Equal(t, tc.bookingQuantity, len(bookings))
 		})
 	}
 }

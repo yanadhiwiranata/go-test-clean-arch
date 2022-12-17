@@ -10,14 +10,12 @@ import (
 	_bookingUsecase "github.com/yanadhiwiranata/go-test-clean-arch/booking/usecase"
 	"github.com/yanadhiwiranata/go-test-clean-arch/domain"
 	mocks "github.com/yanadhiwiranata/go-test-clean-arch/mocks/domain"
+	"github.com/yanadhiwiranata/go-test-clean-arch/util"
 )
 
 func TestBooking(t *testing.T) {
 
-	now := time.Now()
-	yesterday := now.AddDate(0, 0, -1)
-	tomorrow := now.AddDate(0, 0, 1)
-	the_day_after_tomorrow := now.AddDate(0, 0, 2)
+	yesterday, now, tomorrow, the_day_after_tomorrow := util.GenerateSampleTestTime()
 
 	mockBook := domain.Book{
 		ID:           "works/OL8193420W",
@@ -86,4 +84,109 @@ func TestBooking(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestIndex(t *testing.T) {
+	type testCase struct {
+		name            string
+		startAt         time.Time
+		endAt           time.Time
+		bookings        []domain.Booking
+		bookingQuantity int
+	}
+
+	_, now, tomorrow, the_day_after_tomorrow := util.GenerateSampleTestTime()
+
+	mockBook := domain.Book{
+		ID:           "works/OL8193420W",
+		Title:        "title 1",
+		EditionCount: 20,
+		Authors:      []domain.Author{},
+	}
+
+	allDayBooking := []domain.Booking{
+		{
+			ID:       10,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   now,
+			ReturnAt: the_day_after_tomorrow,
+		},
+	}
+
+	todayBooking := []domain.Booking{
+		{
+			ID:       1,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   now,
+			ReturnAt: now,
+		},
+	}
+
+	tomorrowBooking := []domain.Booking{
+		{
+			ID:       2,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   tomorrow,
+			ReturnAt: tomorrow,
+		},
+		{
+			ID:       3,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   tomorrow,
+			ReturnAt: tomorrow,
+		},
+	}
+
+	theDayAfterTomorrowBooking := []domain.Booking{
+		{
+			ID:       4,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   the_day_after_tomorrow,
+			ReturnAt: the_day_after_tomorrow,
+		},
+		{
+			ID:       5,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   the_day_after_tomorrow,
+			ReturnAt: the_day_after_tomorrow,
+		},
+		{
+			ID:       6,
+			BookID:   mockBook.ID,
+			Quantity: 1,
+			BookAt:   the_day_after_tomorrow,
+			ReturnAt: the_day_after_tomorrow,
+		},
+	}
+
+	mockBookings := []domain.Booking{}
+	mockBookings = append(mockBookings, allDayBooking...)
+	mockBookings = append(mockBookings, todayBooking...)
+	mockBookings = append(mockBookings, tomorrowBooking...)
+	mockBookings = append(mockBookings, theDayAfterTomorrowBooking...)
+
+	tcs := []testCase{
+		{name: "show today book", startAt: now, endAt: now, bookings: append(todayBooking, allDayBooking...), bookingQuantity: len(append(todayBooking, allDayBooking...))},
+		{name: "show tomorrow book", startAt: tomorrow, endAt: tomorrow, bookings: append(tomorrowBooking, allDayBooking...), bookingQuantity: len(append(tomorrowBooking, allDayBooking...))},
+		{name: "show the day after tomorrow book", startAt: the_day_after_tomorrow, endAt: the_day_after_tomorrow, bookings: append(theDayAfterTomorrowBooking, allDayBooking...), bookingQuantity: len(append(theDayAfterTomorrowBooking, allDayBooking...))},
+	}
+
+	mockBookingRepo := new(mocks.BookingRepository)
+	mockBookRepo := new(mocks.BookRepository)
+
+	for _, tc := range tcs {
+		t.Run(tc.name, func(t *testing.T) {
+			mockBookingRepo.On("FilterBooking", mock.Anything, tc.startAt, tc.endAt).Return(tc.bookings)
+			bookingUsecase := _bookingUsecase.NewBookingUsecase(mockBookingRepo, mockBookRepo)
+			bookings, _ := bookingUsecase.Index(context.Background(), tc.startAt, tc.endAt)
+			assert.Equal(t, tc.bookingQuantity, len(bookings))
+		})
+	}
+
 }

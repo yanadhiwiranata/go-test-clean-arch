@@ -2,10 +2,10 @@ package usecase
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/yanadhiwiranata/go-test-clean-arch/domain"
+	"github.com/yanadhiwiranata/go-test-clean-arch/util"
 )
 
 type BookingUsecase struct {
@@ -23,9 +23,7 @@ func NewBookingUsecase(bookingReposity domain.BookingRepository, bookRepository 
 func (s *BookingUsecase) Booking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time, quantity int) (domain.Booking, error) {
 	now := time.Now()
 	if bookAt.Before(now) {
-		fmt.Println("date yesterday")
-		if !s.sameDay(bookAt, now) {
-			fmt.Println("date not valid")
+		if !util.SameDay(bookAt, now) {
 			return domain.Booking{}, domain.ErrBadParamInput
 		}
 	}
@@ -66,9 +64,16 @@ func (s *BookingUsecase) Booking(ctx context.Context, bookID string, bookAt time
 	return booking, nil
 }
 
-// common method will be move to lib later
-func (s *BookingUsecase) sameDay(t1 time.Time, t2 time.Time) bool {
-	y1, m1, d1 := t1.Date()
-	y2, m2, d2 := t2.Date()
-	return y1 == y2 && m1 == m2 && d1 == d2
+func (s *BookingUsecase) Index(ctx context.Context, startAt time.Time, endAt time.Time) ([]domain.Booking, error) {
+	if startAt.After(endAt) {
+		return []domain.Booking{}, domain.ErrBadParamInput
+	}
+
+	bookings := s.bookingReposity.FilterBooking(ctx, startAt, endAt)
+
+	if len(bookings) == 0 {
+		return []domain.Booking{}, domain.ErrNotFound
+	}
+
+	return bookings, nil
 }

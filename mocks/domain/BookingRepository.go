@@ -58,6 +58,22 @@ func (_m *BookingRepository) CountCurrentBooking(ctx context.Context, bookID str
 	return r0, r1
 }
 
+// FilterBooking provides a mock function with given fields: ctx, bookAt, returnAt
+func (_m *BookingRepository) FilterBooking(ctx context.Context, bookAt time.Time, returnAt time.Time) []domain.Booking {
+	ret := _m.Called(ctx, bookAt, returnAt)
+
+	var r0 []domain.Booking
+	if rf, ok := ret.Get(0).(func(context.Context, time.Time, time.Time) []domain.Booking); ok {
+		r0 = rf(ctx, bookAt, returnAt)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Booking)
+		}
+	}
+
+	return r0
+}
+
 type mockConstructorTestingTNewBookingRepository interface {
 	mock.TestingT
 	Cleanup(func())

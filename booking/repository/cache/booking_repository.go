@@ -7,6 +7,7 @@ import (
 
 	"github.com/patrickmn/go-cache"
 	"github.com/yanadhiwiranata/go-test-clean-arch/domain"
+	"github.com/yanadhiwiranata/go-test-clean-arch/util"
 )
 
 type CacheBookRepository struct {
@@ -62,5 +63,23 @@ func (s *CacheBookRepository) AllBooking() []domain.Booking {
 		byteData, _ := json.Marshal(data)
 		json.Unmarshal(byteData, &bookings)
 	}
+	return bookings
+}
+
+func (s *CacheBookRepository) FilterBooking(ctx context.Context, bookAt time.Time, returnAt time.Time) []domain.Booking {
+	all_bookings := s.AllBooking()
+	bookings := []domain.Booking{}
+
+	for _, book := range all_bookings {
+		if util.SameDay(bookAt, book.BookAt) || util.SameDay(returnAt, book.ReturnAt) {
+
+		} else if bookAt.After(book.BookAt) && bookAt.After(book.ReturnAt) {
+			continue
+		} else if returnAt.Before(book.BookAt) && returnAt.Before(book.ReturnAt) {
+			continue
+		}
+		bookings = append(bookings, book)
+	}
+
 	return bookings
 }

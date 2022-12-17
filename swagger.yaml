@@ -26,26 +26,7 @@ paths:
             schema:
               type: array
               items:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  title:
-                    type: string
-                    minLength: 1
-                  subjects:
-                    type: array
-                    items:
-                      type: string
-                  authors:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                        name:
-                          type: string
+                $ref: "#/definitions/book"
         500:
             description: internal server error
             schema:
@@ -70,20 +51,7 @@ paths:
           200:
             description: booking details
             schema:
-              type: object
-              properties:
-                id:
-                  type: integer
-                book_id:
-                  type: string
-                quantity:
-                  type: integer
-                book_at:
-                  type: integer
-                  format: unix timestamp
-                return_at:
-                  type: integer
-                  format: unix timestamp
+              $ref: "#/definitions/booking"
           400:
             description: bad request
             schema:
@@ -96,6 +64,25 @@ paths:
             description: internal server error
             schema:
               $ref: "#/definitions/error"
+    get:
+      parameters:
+          - name: date
+            in: query
+            type: string
+      responses:
+        200:
+            description: list booking at selected date
+            schema:
+              type: array
+              items:
+                allOf:
+                  - $ref: "#/definitions/booking"
+                  - type: object
+                    properties:
+                      book:
+                        $ref: "#/definitions/book"
+        
+
 
 definitions:
   error:
@@ -107,6 +94,45 @@ definitions:
         type: integer
       message:
         type: string
+  book: 
+    type: object
+    properties:
+      id:
+        type: string
+      title:
+        type: string
+        minLength: 1
+      edition_count:
+        type: integer
+      subjects:
+        type: array
+        items:
+          type: string
+      authors:
+        type: array
+        items:
+          type: object
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+  booking:
+    type: object
+    properties:
+      id:
+        type: integer
+      book_id:
+        type: string
+      quantity:
+        type: integer
+      book_at:
+        type: integer
+        format: unix timestamp
+      return_at:
+        type: integer
+        format: unix timestamp
+
 
     
 

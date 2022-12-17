@@ -37,6 +37,29 @@ func (_m *BookingUsecase) Booking(ctx context.Context, bookID string, bookAt tim
 	return r0, r1
 }
 
+// Index provides a mock function with given fields: ctx, bookAt, returnAt
+func (_m *BookingUsecase) Index(ctx context.Context, bookAt time.Time, returnAt time.Time) ([]domain.Booking, error) {
+	ret := _m.Called(ctx, bookAt, returnAt)
+
+	var r0 []domain.Booking
+	if rf, ok := ret.Get(0).(func(context.Context, time.Time, time.Time) []domain.Booking); ok {
+		r0 = rf(ctx, bookAt, returnAt)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]domain.Booking)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, time.Time, time.Time) error); ok {
+		r1 = rf(ctx, bookAt, returnAt)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 type mockConstructorTestingTNewBookingUsecase interface {
 	mock.TestingT
 	Cleanup(func())
