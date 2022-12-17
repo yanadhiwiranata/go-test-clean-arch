@@ -17,7 +17,14 @@ func NewBookUsecase(bookRepository domain.BookRepository) domain.BookUsecase {
 }
 
 func (a *BookUsecase) Index(ctx context.Context, subject string) ([]domain.Book, error) {
-	books, err := a.BookRepository.FilterBySubject(ctx, subject)
+	var books []domain.Book
+	var err error
+	if len(subject) == 0 {
+		books, err = a.BookRepository.Index(ctx)
+	} else {
+		books, err = a.BookRepository.FilterBySubject(ctx, subject)
+	}
+
 	if err != nil {
 		return books, err
 	}

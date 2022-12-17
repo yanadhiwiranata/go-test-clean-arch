@@ -53,6 +53,7 @@ func (s *CacheBookRepository) Booking(ctx context.Context, bookID string, bookAt
 		Quantity: quantity,
 	}
 	bookings = append(bookings, newBooking)
+	s.c.Set(s.cacheName, bookings, cache.DefaultExpiration)
 	return newBooking, nil
 }
 
@@ -66,19 +67,19 @@ func (s *CacheBookRepository) AllBooking() []domain.Booking {
 	return bookings
 }
 
-func (s *CacheBookRepository) FilterBooking(ctx context.Context, bookAt time.Time, returnAt time.Time) []domain.Booking {
+func (s *CacheBookRepository) FilterBooking(ctx context.Context, startAt time.Time, endAt time.Time) []domain.Booking {
 	all_bookings := s.AllBooking()
 	bookings := []domain.Booking{}
 
-	for _, book := range all_bookings {
-		if util.SameDay(bookAt, book.BookAt) || util.SameDay(returnAt, book.ReturnAt) {
+	for _, booking := range all_bookings {
+		if util.SameDay(startAt, booking.BookAt) || util.SameDay(endAt, booking.ReturnAt) {
 
-		} else if bookAt.After(book.BookAt) && bookAt.After(book.ReturnAt) {
+		} else if startAt.After(booking.BookAt) && startAt.After(booking.ReturnAt) {
 			continue
-		} else if returnAt.Before(book.BookAt) && returnAt.Before(book.ReturnAt) {
+		} else if endAt.Before(booking.BookAt) && endAt.Before(booking.ReturnAt) {
 			continue
 		}
-		bookings = append(bookings, book)
+		bookings = append(bookings, booking)
 	}
 
 	return bookings

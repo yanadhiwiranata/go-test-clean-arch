@@ -71,9 +71,5 @@ func (s *BookingUsecase) Index(ctx context.Context, startAt time.Time, endAt tim
 
 	bookings := s.bookingReposity.FilterBooking(ctx, startAt, endAt)
 
-	if len(bookings) == 0 {
-		return []domain.Booking{}, domain.ErrNotFound
-	}
-
 	return bookings, nil
 }
