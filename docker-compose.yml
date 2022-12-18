@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: go_test_clean_arch
+    ports:
+      - 9090:9090
+    volumes:
+      - ./config.json:/cli/config.json

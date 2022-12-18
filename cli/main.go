@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
 	middleware "github.com/labstack/echo/v4/middleware"
 	"github.com/labstack/gommon/log"
+	"github.com/spf13/viper"
 	_book_handler_echo "github.com/yanadhiwiranata/go-test-clean-arch/book/delivery/http/echo"
 	_book_cache_repository "github.com/yanadhiwiranata/go-test-clean-arch/book/repository/cache"
 	_book_usecase "github.com/yanadhiwiranata/go-test-clean-arch/book/usecase"
@@ -15,9 +17,21 @@ import (
 	_domain_helper "github.com/yanadhiwiranata/go-test-clean-arch/domain/helper"
 )
 
+func init() {
+	viper.SetConfigFile(`config.json`)
+	err := viper.ReadInConfig()
+	if err != nil {
+		panic(err)
+	}
+
+	if viper.GetBool(`debug`) {
+		fmt.Println("Service RUN on DEBUG mode")
+	}
+}
+
 func main() {
 	r := defaultEchoServer()
-	http.ListenAndServe(":4000", r)
+	http.ListenAndServe(viper.GetString("server.address"), r)
 }
 
 func defaultEchoServer() *echo.Echo {

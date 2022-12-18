@@ -99,6 +99,13 @@ go get github.com/patrickmn/go-cache
 ## Booking System
 This system will help to provide booking online
 
+## Installation
+for running this program only need docker by this command
+```
+make docker-run
+make docker-stop
+```
+
 data sample will be provided by
 https://openlibrary.org/dev/docs/api/subjects
 
