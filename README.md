@@ -3,6 +3,10 @@
 This service for testing purposes, to make it easier to connect to other libraries will be using clean architecture
 
 ## Documentation
+### Dependencies
+1. golang 1.19
+2. docker
+
 ## Clean Architecture Guide
 https://github.com/bxcodec/go-clean-arch
 
