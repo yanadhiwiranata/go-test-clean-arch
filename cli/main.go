@@ -1,8 +1,11 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
+	"os"
+	"time"
 
 	"github.com/labstack/echo/v4"
 	middleware "github.com/labstack/echo/v4/middleware"
@@ -31,7 +34,14 @@ func init() {
 
 func main() {
 	r := defaultEchoServer()
-	http.ListenAndServe(viper.GetString("server.address"), r)
+	err := http.ListenAndServe(viper.GetString("server.address"), r)
+	if errors.Is(err, http.ErrServerClosed) {
+		fmt.Printf("server closed\n")
+	} else if err != nil {
+		fmt.Printf("error starting server: %s\n", err)
+		os.Exit(1)
+	}
+	fmt.Println("done")
 }
 
 func defaultEchoServer() *echo.Echo {
@@ -39,18 +49,32 @@ func defaultEchoServer() *echo.Echo {
 	r.GET("/", func(c echo.Context) error {
 		return c.String(http.StatusOK, "Hello, World!")
 	})
-	bRepo := _book_cache_repository.NewCacheBookRepository()
-	bUsecase := _book_usecase.NewBookUsecase(bRepo)
-	_book_handler_echo.NewBookHandler(r, bUsecase)
 
-	bookingRepo := _booking_cache_repository.NewCacheBookingRepository()
-	bookingUsecase := _booking_usecase.NewBookingUsecase(bookingRepo, bRepo)
+	timeoutContext := time.Duration(viper.GetInt("context.timeout")) * time.Second
+	bookRepo := _book_cache_repository.NewCacheBookRepository()
+	bookUsecase := _book_usecase.NewBookUsecase(bookRepo, timeoutContext)
+	_book_handler_echo.NewBookHandler(r, bookUsecase)
+
+	bookingRepo := _booking_cache_repository.NewCacheBookingRepository(bookRepo)
+	bookingUsecase := _booking_usecase.NewBookingUsecase(bookingRepo, bookRepo, timeoutContext)
 	_booking_handler_echo.NewBookingHandler(r, bookingUsecase)
 
 	r.Use(middleware.RecoverWithConfig(middleware.RecoverConfig{
 		StackSize: 1 << 10, // 1 KB
 		LogLevel:  log.ERROR,
 	}))
+
+	r.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+		Skipper: middleware.DefaultSkipper,
+		OnTimeoutRouteErrorHandler: func(err error, c echo.Context) {
+			response := _domain_helper.ResponseError{
+				Message: "Bad Gateway",
+			}
+			c.JSON(http.StatusBadGateway, response)
+		},
+		Timeout: 5000 * time.Millisecond,
+	}))
+
 	r.HTTPErrorHandler = customHTTPErrorHandler
 	return r
 }

@@ -11,6 +11,7 @@ type Booking struct {
 	Quantity int       `json:"quantity"`
 	BookAt   time.Time `json:"book_at"`
 	ReturnAt time.Time `json:"return_at"`
+	Book     Book      `json:"book"`
 }
 
 type BookingRepository interface {

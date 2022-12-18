@@ -10,18 +10,19 @@ import (
 	"github.com/yanadhiwiranata/go-test-clean-arch/util"
 )
 
-type CacheBookRepository struct {
-	c         *cache.Cache
-	cacheName string
+type CacheBookingRepository struct {
+	c              *cache.Cache
+	bookRepository domain.BookRepository
+	cacheName      string
 }
 
-func NewCacheBookingRepository() domain.BookingRepository {
+func NewCacheBookingRepository(bookRepository domain.BookRepository) domain.BookingRepository {
 	c := cache.New(5*time.Minute, 10*time.Minute)
-	return &CacheBookRepository{c: c, cacheName: "booking"}
+	return &CacheBookingRepository{c: c, cacheName: "booking", bookRepository: bookRepository}
 }
 
-func (s *CacheBookRepository) CountCurrentBooking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time) (int, error) {
-	bookings := s.AllBooking()
+func (s *CacheBookingRepository) CountCurrentBooking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time) (int, error) {
+	bookings := s.AllBooking(ctx)
 	count := 0
 
 	for _, book := range bookings {
@@ -38,13 +39,13 @@ func (s *CacheBookRepository) CountCurrentBooking(ctx context.Context, bookID st
 	return count, nil
 }
 
-func (s *CacheBookRepository) Booking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time, quantity int) (domain.Booking, error) {
+func (s *CacheBookingRepository) Booking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time, quantity int) (domain.Booking, error) {
 	if quantity < 1 {
 		return domain.Booking{}, domain.ErrBadParamInput
 	}
 
 	// TODO lock or add sharing sequence to keep ID increment correctly when scale up(it will be ok if using database sequence)
-	bookings := s.AllBooking()
+	bookings := s.AllBooking(ctx)
 	newBooking := domain.Booking{
 		ID:       len(bookings) + 1,
 		BookID:   bookID,
@@ -57,18 +58,28 @@ func (s *CacheBookRepository) Booking(ctx context.Context, bookID string, bookAt
 	return newBooking, nil
 }
 
-func (s *CacheBookRepository) AllBooking() []domain.Booking {
+func (s *CacheBookingRepository) AllBooking(ctx context.Context) []domain.Booking {
 	data, found := s.c.Get(s.cacheName)
 	bookings := []domain.Booking{}
 	if found {
 		byteData, _ := json.Marshal(data)
 		json.Unmarshal(byteData, &bookings)
 	}
+
+	if len(bookings) > 0 {
+		for i, booking := range bookings {
+			book, err := s.bookRepository.FilterByID(ctx, booking.BookID)
+			if err != nil {
+				bookings[i].Book = book
+			}
+		}
+	}
+
 	return bookings
 }
 
-func (s *CacheBookRepository) FilterBooking(ctx context.Context, startAt time.Time, endAt time.Time) []domain.Booking {
-	all_bookings := s.AllBooking()
+func (s *CacheBookingRepository) FilterBooking(ctx context.Context, startAt time.Time, endAt time.Time) []domain.Booking {
+	all_bookings := s.AllBooking(ctx)
 	bookings := []domain.Booking{}
 
 	for _, booking := range all_bookings {

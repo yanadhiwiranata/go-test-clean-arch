@@ -86,11 +86,12 @@ func TestIndex(t *testing.T) {
 		{name: "Show empty bookings", startAt: now, endAt: now, bookings: []domain.Booking{}, err: nil, status: http.StatusOK},
 	}
 
+	contextTimeout := 2 * time.Second
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
 			mockBookingRepo := new(mocks.BookingRepository)
 			mockBookingRepo.On("FilterBooking", mock.Anything, tc.startAt, tc.endAt).Return(tc.bookings)
-			bookingUsecase := _booking_usecase.NewBookingUsecase(mockBookingRepo, mockBookRepo)
+			bookingUsecase := _booking_usecase.NewBookingUsecase(mockBookingRepo, mockBookRepo, contextTimeout)
 			handler := _booking_handler_echo.BookingHandler{
 				BookingUsecase: bookingUsecase,
 			}

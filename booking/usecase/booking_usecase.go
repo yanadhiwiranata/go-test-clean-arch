@@ -11,16 +11,21 @@ import (
 type BookingUsecase struct {
 	bookingReposity domain.BookingRepository
 	bookRepository  domain.BookRepository
+	contextTimeout  time.Duration
 }
 
-func NewBookingUsecase(bookingReposity domain.BookingRepository, bookRepository domain.BookRepository) *BookingUsecase {
+func NewBookingUsecase(bookingReposity domain.BookingRepository, bookRepository domain.BookRepository, timeout time.Duration) *BookingUsecase {
 	return &BookingUsecase{
 		bookingReposity: bookingReposity,
 		bookRepository:  bookRepository,
+		contextTimeout:  timeout,
 	}
 }
 
-func (s *BookingUsecase) Booking(ctx context.Context, bookID string, bookAt time.Time, returnAt time.Time, quantity int) (domain.Booking, error) {
+func (s *BookingUsecase) Booking(c context.Context, bookID string, bookAt time.Time, returnAt time.Time, quantity int) (domain.Booking, error) {
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
 	now := time.Now()
 	if bookAt.Before(now) {
 		if !util.SameDay(bookAt, now) {
@@ -64,7 +69,10 @@ func (s *BookingUsecase) Booking(ctx context.Context, bookID string, bookAt time
 	return booking, nil
 }
 
-func (s *BookingUsecase) Index(ctx context.Context, startAt time.Time, endAt time.Time) ([]domain.Booking, error) {
+func (s *BookingUsecase) Index(c context.Context, startAt time.Time, endAt time.Time) ([]domain.Booking, error) {
+	ctx, cancel := context.WithTimeout(c, s.contextTimeout)
+	defer cancel()
+
 	if startAt.After(endAt) {
 		return []domain.Booking{}, domain.ErrBadParamInput
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	_cacheBookingRepository "github.com/yanadhiwiranata/go-test-clean-arch/booking/repository/cache"
 	"github.com/yanadhiwiranata/go-test-clean-arch/domain"
+	mocks "github.com/yanadhiwiranata/go-test-clean-arch/mocks/domain"
 	"github.com/yanadhiwiranata/go-test-clean-arch/util"
 )
 
@@ -59,11 +60,12 @@ func TestCountCurrentBooking(t *testing.T) {
 		},
 	}
 
-	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository()
+	mockBookRepository := new(mocks.BookRepository)
+	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository(mockBookRepository)
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookRepository) []domain.Booking {
+			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookingRepository, ctx context.Context) []domain.Booking {
 				return mockBookings
 			})
 			defer patches.Reset()
@@ -111,11 +113,12 @@ func TestBooking(t *testing.T) {
 		{name: "booking -1 quantity book", bookID: mockBook.ID, bookAt: now, returnAt: now, quantity: -1, success: false},
 	}
 
-	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository()
+	mockBookRepository := new(mocks.BookRepository)
+	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository(mockBookRepository)
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookRepository) []domain.Booking {
+			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookingRepository, ctx context.Context) []domain.Booking {
 				return mockBookings
 			})
 			defer patches.Reset()
@@ -221,11 +224,12 @@ func TestFilterBookingByTime(t *testing.T) {
 		{name: "show the day after tomorrow book", bookAt: the_day_after_tomorrow, returnAt: the_day_after_tomorrow, bookingQuantity: 4},
 	}
 
-	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository()
+	mockBookRepository := new(mocks.BookRepository)
+	bookingRepository := _cacheBookingRepository.NewCacheBookingRepository(mockBookRepository)
 
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
-			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookRepository) []domain.Booking {
+			patches := gomonkey.ApplyMethod(reflect.TypeOf(bookingRepository), "AllBooking", func(m *_cacheBookingRepository.CacheBookingRepository, ctx context.Context) []domain.Booking {
 				return mockBookings
 			})
 			defer patches.Reset()

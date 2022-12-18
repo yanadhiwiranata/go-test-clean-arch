@@ -58,7 +58,7 @@ func TestBooking(t *testing.T) {
 
 	mockBookingRepo := new(mocks.BookingRepository)
 	mockBookRepo := new(mocks.BookRepository)
-
+	contextTimeout := 2 * time.Second
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
 			if tc.responseFilterError == nil {
@@ -75,7 +75,7 @@ func TestBooking(t *testing.T) {
 			mockBookingRepo.On("CountCurrentBooking", mock.Anything, tc.bookID, tc.requestBookAt, tc.requestReturnAt).Return(tc.responseQuantity, nil)
 			mockBookingRepo.On("Booking", mock.Anything, tc.bookID, tc.requestBookAt, tc.requestReturnAt, tc.requestQuantity).Return(tc.responseBooking, tc.responseBookingError)
 
-			bookingUsecase := _bookingUsecase.NewBookingUsecase(mockBookingRepo, mockBookRepo)
+			bookingUsecase := _bookingUsecase.NewBookingUsecase(mockBookingRepo, mockBookRepo, contextTimeout)
 			_, err := bookingUsecase.Booking(context.Background(), tc.bookID, tc.requestBookAt, tc.requestReturnAt, tc.requestQuantity)
 			if tc.responseError == nil {
 				assert.NoError(t, err)
@@ -180,10 +180,11 @@ func TestIndex(t *testing.T) {
 	mockBookingRepo := new(mocks.BookingRepository)
 	mockBookRepo := new(mocks.BookRepository)
 
+	contextTimeout := 2 * time.Second
 	for _, tc := range tcs {
 		t.Run(tc.name, func(t *testing.T) {
 			mockBookingRepo.On("FilterBooking", mock.Anything, tc.startAt, tc.endAt).Return(tc.bookings)
-			bookingUsecase := _bookingUsecase.NewBookingUsecase(mockBookingRepo, mockBookRepo)
+			bookingUsecase := _bookingUsecase.NewBookingUsecase(mockBookingRepo, mockBookRepo, contextTimeout)
 			bookings, _ := bookingUsecase.Index(context.Background(), tc.startAt, tc.endAt)
 			assert.Equal(t, tc.bookingQuantity, len(bookings))
 		})

@@ -2,17 +2,20 @@ package usecase
 
 import (
 	"context"
+	"time"
 
 	"github.com/yanadhiwiranata/go-test-clean-arch/domain"
 )
 
 type BookUsecase struct {
 	BookRepository domain.BookRepository
+	contextTimeout time.Duration
 }
 
-func NewBookUsecase(bookRepository domain.BookRepository) domain.BookUsecase {
+func NewBookUsecase(bookRepository domain.BookRepository, timeout time.Duration) domain.BookUsecase {
 	return &BookUsecase{
 		BookRepository: bookRepository,
+		contextTimeout: timeout,
 	}
 }
 

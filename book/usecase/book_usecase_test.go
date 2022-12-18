@@ -3,6 +3,7 @@ package usecase_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -25,14 +26,15 @@ func TestIndexFilterBySubject(t *testing.T) {
 		},
 	}
 	mockBookRepo.On("FilterBySubject", mock.Anything, subject).Return(mockBooks, nil)
-	bookUsecase := _bookUsecase.NewBookUsecase(mockBookRepo)
+	contextTimeout := 2 * time.Second
+	bookUsecase := _bookUsecase.NewBookUsecase(mockBookRepo, contextTimeout)
 	books, err := bookUsecase.Index(context.Background(), subject)
 	assert.NoError(t, err)
 	assert.NotEmpty(t, books)
 
 	mockBookRepo = new(mocks.BookRepository)
 	mockBookRepo.On("FilterBySubject", mock.Anything, subject).Return([]domain.Book{}, nil)
-	bookUsecase = _bookUsecase.NewBookUsecase(mockBookRepo)
+	bookUsecase = _bookUsecase.NewBookUsecase(mockBookRepo, contextTimeout)
 	books, err = bookUsecase.Index(context.Background(), subject)
 	assert.Equal(t, domain.ErrNotFound, err)
 	assert.Empty(t, books)

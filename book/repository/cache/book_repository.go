@@ -3,8 +3,8 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"time"
 
@@ -25,15 +25,31 @@ func NewCacheBookRepository() domain.BookRepository {
 	}
 }
 
-func (o *CacheBookRepository) fetchBook(url string) []domain.Book {
-	response, err := http.Get(url)
+func (o *CacheBookRepository) fetchBook(ctx context.Context, url string) ([]domain.Book, error) {
+	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return []domain.Book{}, err
+	}
+
+	ctx1, cancel := context.WithTimeout(ctx, time.Millisecond*300000)
+	defer cancel()
+
+	request = request.WithContext(ctx1)
+	transport := new(http.Transport)
+	client := new(http.Client)
+	client.Transport = transport
+
+	response, err := http.DefaultClient.Do(request)
+	if err != nil {
+		fmt.Println(err)
+		return []domain.Book{}, err
 	}
 
 	responseData, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return []domain.Book{}, err
 	}
 
 	type Author struct {
@@ -64,7 +80,8 @@ func (o *CacheBookRepository) fetchBook(url string) []domain.Book {
 	var subject SubjectResponse
 	err = json.Unmarshal(responseData, &subject)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		return []domain.Book{}, err
 	}
 
 	books := []domain.Book{}
@@ -78,17 +95,21 @@ func (o *CacheBookRepository) fetchBook(url string) []domain.Book {
 	byteData, _ := json.Marshal(subject.Works)
 	json.Unmarshal(byteData, &books)
 
-	return books
+	return books, nil
 }
 
 func (o *CacheBookRepository) Index(ctx context.Context) ([]domain.Book, error) {
 	data, found := o.c.Get(o.cacheName)
 	books := []domain.Book{}
+	var err error
 	if found {
 		byteData, _ := json.Marshal(data)
 		json.Unmarshal(byteData, &books)
 	} else {
-		books = o.fetchBook("http://openlibrary.org/subjects/love.json?published_in=1500-1600")
+		books, err = o.fetchBook(ctx, "http://openlibrary.org/subjects/love.json?published_in=1500-1600")
+		if err != nil {
+			return books, err
+		}
 		o.c.Set(o.cacheName, books, cache.DefaultExpiration)
 	}
 
@@ -96,7 +117,11 @@ func (o *CacheBookRepository) Index(ctx context.Context) ([]domain.Book, error) 
 }
 
 func (o *CacheBookRepository) FilterBySubject(ctx context.Context, subject string) ([]domain.Book, error) {
-	books, _ := o.Index(ctx)
+	books, err := o.Index(ctx)
+	if err != nil {
+		return []domain.Book{}, err
+	}
+
 	var filterredBook []domain.Book
 	for _, book := range books {
 		for _, s := range book.Subjects {
@@ -111,7 +136,12 @@ func (o *CacheBookRepository) FilterBySubject(ctx context.Context, subject strin
 }
 
 func (o *CacheBookRepository) FilterByID(ctx context.Context, id string) (domain.Book, error) {
-	books, _ := o.Index(ctx)
+	books, err := o.Index(ctx)
+
+	if err != nil {
+		return domain.Book{}, err
+	}
+
 	for _, book := range books {
 		if book.ID == id {
 			return book, nil
