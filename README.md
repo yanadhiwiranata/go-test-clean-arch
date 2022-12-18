@@ -110,8 +110,10 @@ make docker-run
 make docker-stop
 ```
 
-data sample will be provided by
-https://openlibrary.org/dev/docs/api/subjects
+postman collection [link](https://drive.google.com/file/d/1YaPMgcjtwahO3cArNvoO7NccCY9hF9Ar/view?usp=sharing)
+
+data sample will be provided by [link](https://openlibrary.org/dev/docs/api/subjects)
+
 
 
 the data from API will be breakdown like
@@ -167,6 +169,3 @@ Booking process
         DD -->Stop
 
 ```
-
-
-go test .\... -gcflags=all=-l
