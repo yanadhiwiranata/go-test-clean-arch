@@ -67,10 +67,7 @@ func defaultEchoServer() *echo.Echo {
 	r.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Skipper: middleware.DefaultSkipper,
 		OnTimeoutRouteErrorHandler: func(err error, c echo.Context) {
-			response := _domain_helper.ResponseError{
-				Message: "Bad Gateway",
-			}
-			c.JSON(http.StatusBadGateway, response)
+			fmt.Println("timout in " + c.Path())
 		},
 		Timeout: 5000 * time.Millisecond,
 	}))
